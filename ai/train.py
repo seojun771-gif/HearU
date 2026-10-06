@@ -1,6 +1,6 @@
 """MFCC + MLP 기준 모델 학습.
 
-데이터 구조:  ai/data/FIRE/*.wav, BABY_CRY/, DOORBELL/, KNOCK/, CALL/, UNKNOWN/
+데이터 구조:  ai/data/fire/*.wav, baby_cry/, doorbell/, knock/, call/, unknown/
 실행:        python train.py
 """
 import joblib
@@ -29,13 +29,13 @@ def augment(y: np.ndarray) -> np.ndarray:
 def load_files():
     paths, labels = [], []
     for name, cid in NAME_TO_ID.items():
-        folder = DATA_DIR / name
+        folder = DATA_DIR / name.lower()
         files = [p for p in folder.glob("*") if p.suffix.lower() in AUDIO_EXT] if folder.exists() else []
         print(f"{name:9s} {len(files)}개")
         paths += files
         labels += [cid] * len(files)
     if not paths:
-        raise SystemExit(f"데이터가 없습니다: {DATA_DIR}/<LABEL>/*.wav")
+        raise SystemExit(f"데이터가 없습니다: {DATA_DIR}/<label>/*.wav")
     return paths, np.array(labels)
 
 
