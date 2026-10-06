@@ -1,0 +1,12 @@
+{
+  "labels": [
+    {"id": 0, "name": "FIRE",     "ko": "화재경보기", "priority": 1},
+    {"id": 1, "name": "BABY_CRY", "ko": "아기 울음",  "priority": 2},
+    {"id": 2, "name": "DOORBELL", "ko": "초인종",     "priority": 3},
+    {"id": 3, "name": "KNOCK",    "ko": "문 두드림",  "priority": 4},
+    {"id": 4, "name": "CALL",     "ko": "사람 호출",  "priority": 5},
+    {"id": 5, "name": "UNKNOWN",  "ko": "기타",       "priority": 6}
+  ],
+  "thresholds": {"confirm": 0.80, "weak": 0.60},
+  "cooldown_sec": 5
+}
