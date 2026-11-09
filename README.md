@@ -75,6 +75,8 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 | `ai/common.py` | 설정, 오디오 로딩, 특징 추출 (학습·추론 공용) |
 | `ai/train.py` | 학습, 평가(클래스별 P/R/F1, 혼동행렬), `model.joblib` 저장 |
 | `ai/infer.py` | 파일/마이크 추론, 신뢰도 판정, UART 메시지 생성 |
+| `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |
+| `ai/test_fire_rule.py` | 규칙 검출기 테스트 (합성 소리) |
 | `shared/labels.json` | 클래스·임계값 정의 |
 
 ### 신뢰도 처리
@@ -85,7 +87,20 @@ confidence >= 0.80            → 해당 클래스 확정
 confidence < 0.60             → UNKNOWN
 ```
 
-화재경보기는 단일 AI 확률만 쓰지 않고 반복 주기·지속시간 규칙을 함께 확인할 계획이다(미구현).
+화재경보기는 단일 AI 확률만 쓰지 않고 반복 주기·지속시간 규칙을 함께 확인한다. `fire_rule.py`가 2.7~3.8kHz 대역 고음의 울림 길이와 간격을 보고 판정한다.
+
+| 판정 | 조건 | 합성 소리 기준 알림 시점 |
+|---|---|---|
+| `CONFIRMED` | T-3 울림 3회 또는 T-4 울림 4회가 규칙적으로 이어짐 | 경보 시작 후 약 2.4초 |
+| `CANDIDATE` | 규칙적인 울림 2회, 또는 대역 고음이 1초 이상 지속 (주전자 휘파람 등 오경보 가능) | 경보 시작 후 약 1.4초 |
+
+```powershell
+python fire_rule.py alarm.wav               # 파일 판정
+python fire_rule.py --mic                   # 마이크 실시간
+python -m unittest test_fire_rule -v        # 테스트
+```
+
+> 임계값은 합성 소리로만 맞췄다. 실제 경보기 녹음(학교 설비·공개 음원)으로 다시 조정해야 하며, 520Hz 저주파 경보기와 음성 안내형 경보기는 아직 다루지 않는다.
 
 ## 4. 시작하기
 
@@ -117,6 +132,7 @@ ai/data/
 
 수집 조건: 조용한 방 / TV 켜짐 / 대화 중, 거리 0.5·1·3m, 음량 소·중·대, 스마트폰·노트북·실제 장치 등 다양한 음원, 문 열림·닫힘.
 `unknown`이 부족하면 문 두드림·사람 호출을 오인식하기 쉬우므로 목표 클래스보다 다양하게 확보한다.
+단계별 목표 개수와 녹음 방법은 [docs/DATA_COLLECTION.md](docs/DATA_COLLECTION.md), 진행 상황은 `python check_data.py`로 확인한다.
 
 ### 학습 / 추론
 
@@ -232,6 +248,8 @@ RESULT,class_id,label,confidence(0~100),priority\n
 - [x] MFCC + MLP 기준 모델 학습 (`train.py`)
 - [x] 클래스별 평가 리포트 (P/R/F1, Confusion Matrix)
 - [x] 실시간 추론 함수, 신뢰도 임계값·UNKNOWN 처리 (`infer.py`)
+- [x] 화재경보 규칙 검출기 (`fire_rule.py`, 합성 소리 테스트만 통과)
+- [ ] 화재경보 규칙 검출기를 실제 경보음 녹음으로 검증·임계값 조정, `infer.py --mic`에 연결
 - [ ] 데이터 수집·분리 스크립트 (현재 train.py가 8:2 단순 분할, 가이드는 70/15/15)
 - [ ] 클래스 가중치 MLP, Mel-spectrogram + CNN 비교
 - [ ] `evaluate.py`: 환경별 성능, 추론시간, 임계값별 PR, 실패 사례
