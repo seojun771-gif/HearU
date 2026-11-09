@@ -2,7 +2,8 @@
 
 생활소리(화재경보기·아기 울음·초인종·문 두드림·사람 호출)를 AI로 분류하고, FPGA 장치(LED·진동·OLED)와 스마트폰 앱으로 알려주는 청각 보조 시스템.
 
-> **현재 상태**: AI 분류 MVP(MFCC + MLP) 구현. 백엔드·앱·FPGA 연동은 미구현.
+> **현재 상태**: AI 분류 MVP(MFCC + MLP)와 화재경보 규칙 검출기 구현. 실제 녹음은 doorbell 11개만 수집됨(성능 측정 전). 백엔드·앱·FPGA 연동은 미구현.
+> **문서**: 코드 1분 요약 [docs/OVERVIEW.md](docs/OVERVIEW.md) · 파일별 상세 설명 [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) · 녹음 수집 [docs/DATA_COLLECTION.md](docs/DATA_COLLECTION.md)
 > 개발 원칙: 최고 정확도보다 **위험 소리를 놓치지 않는 Recall**, 불필요한 알림을 줄이는 Precision, **1초 이내 반응**, **폰이 끊겨도 유지되는 장치 알림**을 우선한다.
 
 ## 1. MVP 목표
@@ -77,6 +78,7 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 | `ai/infer.py` | 파일/마이크 추론, 신뢰도 판정, UART 메시지 생성 |
 | `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |
 | `ai/test_fire_rule.py` | 규칙 검출기 테스트 (합성 소리) |
+| `ai/check_data.py` | 수집한 녹음의 개수(단계별 목표 대비)·품질(형식·크기·잘림·중복) 점검 |
 | `shared/labels.json` | 클래스·임계값 정의 |
 
 ### 신뢰도 처리
@@ -250,6 +252,8 @@ RESULT,class_id,label,confidence(0~100),priority\n
 - [x] 실시간 추론 함수, 신뢰도 임계값·UNKNOWN 처리 (`infer.py`)
 - [x] 화재경보 규칙 검출기 (`fire_rule.py`, 합성 소리 테스트만 통과)
 - [ ] 화재경보 규칙 검출기를 실제 경보음 녹음으로 검증·임계값 조정, `infer.py --mic`에 연결
+- [x] 녹음 점검 스크립트 (`check_data.py`)
+- [ ] 실제 녹음 수집: 1단계 목표 doorbell 30 · fire 30 · unknown 60 (현재 doorbell 11, 소리가 작아 보충 필요)
 - [ ] 데이터 수집·분리 스크립트 (현재 train.py가 8:2 단순 분할, 가이드는 70/15/15)
 - [ ] 클래스 가중치 MLP, Mel-spectrogram + CNN 비교
 - [ ] `evaluate.py`: 환경별 성능, 추론시간, 임계값별 PR, 실패 사례
@@ -279,7 +283,8 @@ RESULT,class_id,label,confidence(0~100),priority\n
 
 ```
 hearu/
-├─ ai/            # 분류 모델 (현재). 이후 evaluate.py, models/ 추가
+├─ ai/            # 분류 모델, 화재 규칙 검출기, 데이터 점검. 이후 evaluate.py, models/ 추가
+├─ docs/          # OVERVIEW.md, CODE_GUIDE.md, DATA_COLLECTION.md
 ├─ shared/        # labels.json, (예정) protocol.md
 ├─ backend/       # 예정: main.py, database.py, schemas.py, serial_bridge.py
 ├─ app/           # 예정: src/, public/
