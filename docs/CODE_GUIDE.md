@@ -32,11 +32,12 @@ HearU의 AI는 **소리를 두 갈래로 동시에 판단**하도록 설계돼 �
 | 5 | `ai/fire_rule.py` | 화재경보 **규칙 검출기** (3kHz 대역 + 반복 리듬) | **FPGA**, AI |
 | 6 | `ai/test_fire_rule.py` | `fire_rule.py` 자동 테스트 (합성 소리) | AI |
 | 7 | `ai/check_data.py` | 수집한 녹음의 개수·품질 점검 | 데이터 수집 담당 |
+| 8 | `ai/fetch_public_data.py` | 공개 데이터셋(ESC-50)에서 knock·baby_cry·unknown 녹음을 받아 변환 | 데이터 수집 담당 |
 
 ### 어떤 순서로 쓰나 (작업 흐름)
 
 ```
-녹음 → check_data.py (개수·품질 점검) → train.py (학습) → infer.py (분류 / 실시간)
+녹음 / fetch_public_data.py (공개 데이터) → check_data.py (개수·품질 점검) → train.py (학습) → infer.py (분류 / 실시간)
                                                      └→ fire_rule.py (화재 규칙, 독립 실행)
 ```
 
@@ -50,6 +51,7 @@ ai/
 ├─ fire_rule.py         화재 규칙 검출기
 ├─ test_fire_rule.py    화재 규칙 테스트
 ├─ check_data.py        데이터 점검
+├─ fetch_public_data.py 공개 데이터셋(ESC-50) 다운로드·변환
 ├─ requirements.txt     설치할 패키지 목록
 ├─ data/                녹음 파일 (git에 안 올라감)  data/<label>/*.wav
 ├─ model.joblib         학습 결과 (git에 안 올라감, train.py가 생성)
@@ -254,7 +256,36 @@ AI 모델의 확률만 믿지 않고, **화재경보음의 물리적 특징**으
 
 ---
 
-## 9. 직접 따라 해 보기
+## 9. `ai/fetch_public_data.py` — 공개 데이터 받기
+
+직접 녹음하는 시간을 줄이기 위해, 공개 환경음 데이터셋 **ESC-50**(2000개 클립)에서 필요한 소리를 받아 16kHz mono 16bit wav로 바꿔 `ai/data/<label>/`에 넣습니다.
+
+| 라벨 | 가져오는 ESC-50 카테고리 | 기본 개수 |
+|---|---|---|
+| `knock` | door_wood_knock | 40 |
+| `baby_cry` | crying_baby | 40 |
+| `unknown` | 생활소리 20종 (키보드, 마우스, 기침, 웃음, 발소리, 박수, 청소기, 세탁기, 물소리, 개·고양이, **알람시계, 사이렌** 등) | 종류당 8 = 160 |
+
+**못 받는 것: `fire`(연기감지기 경보음), `doorbell`, 사람 말소리(대화).** 이 셋은 직접 녹음하거나 다른 출처(예: FSD50K의 Smoke detector)에서 구해야 합니다.
+
+**동작**
+- 알람시계·사이렌은 화재경보와 헷갈리기 쉬운 소리라 `unknown`에 일부러 넣었습니다. 모델이 "경보 비슷한 소리 = 화재"로 배우지 않게 하기 위해서입니다. 반대로 알람시계를 `fire`에 넣으면 안 됩니다.
+- 같은 원본 녹음(`src_file`)이 겹치지 않게 서로 다른 원본을 먼저 고릅니다.
+- 이미 받은 파일은 건너뜁니다. 파일 이름은 `esc50_...`로 시작하므로, 지우려면 `esc50_*.wav`만 삭제하면 됩니다.
+- 출처는 `ai/data/public_sources.csv`에 기록됩니다 (원본 파일명, 카테고리, Freesound 원본 ID, fold).
+
+**실행**: `python fetch_public_data.py --dry-run` (받을 목록만 확인) → `python fetch_public_data.py` → `python check_data.py`
+옵션: `--knock N`, `--baby-cry N`, `--unknown-per-class N`
+
+**주의**
+- **라이선스는 CC BY-NC 3.0(비영리)이고 클립별 원 라이선스도 제각각입니다.** 개발·중간보고용으로만 쓰고, 제품 학습 데이터로는 직접 녹음이나 라이선스가 확인된 데이터로 바꿔야 합니다.
+- `check_data.py`가 이 파일들에 "클리핑", "앞부분 여유 없음", "끝까지 소리가 남"을 많이 표시합니다. ESC-50 클립은 긴 녹음에서 5초씩 잘라 최대 음량으로 맞춘 것이라 생기는 현상으로 보이고, 직접 녹음의 문제와는 성격이 다릅니다.
+- 같은 원본에서 나온 여러 구간이 학습과 테스트에 섞일 수 있습니다(`train.py`는 파일 단위로 분할). 성능이 높게 나올 수 있으니, 나중에 `src_file` 기준으로 나누는 것이 좋습니다.
+- 공개 데이터는 실제 장치 마이크를 거친 소리가 아닙니다. 최종 평가는 직접 녹음으로 해야 합니다.
+
+---
+
+## 10. 직접 따라 해 보기
 
 ```powershell
 cd ai
@@ -265,6 +296,7 @@ pip install -r requirements.txt
 
 | 하고 싶은 것 | 명령 | 필요한 것 |
 |---|---|---|
+| 공개 데이터 받기 | `python fetch_public_data.py` | 인터넷 (**fire·doorbell·대화는 못 받음**) |
 | 녹음 점검 | `python check_data.py` | `ai/data/<label>/*.wav` |
 | 학습 | `python train.py` | 2개 이상 클래스의 녹음 |
 | 파일 하나 분류 | `python infer.py sample.wav` | `model.joblib` (학습 후) |
@@ -281,7 +313,7 @@ print(extract(load_wav("sample.wav")).shape)
 
 ---
 
-## 10. 현재 상태 (2026-11-09 기준)
+## 11. 현재 상태 (2026-11-09 기준)
 
 | 항목 | 상태 |
 |---|---|
@@ -289,11 +321,12 @@ print(extract(load_wav("sample.wav")).shape)
 | 화재 규칙 검출기 | 구현·테스트 통과 (**합성 소리만**) |
 | 실제 녹음 데이터 | **doorbell 11개뿐** (fire, unknown 없음) |
 | 실제 성능 측정 | **아직 없음** (클래스가 하나뿐이라 학습해도 의미 없음) |
+| 공개 데이터 스크립트 | 동작 확인함 (임시 폴더에서 소량 테스트). 실제 `ai/data/`에는 아직 받지 않음 |
 | FPGA UART 연결 | 없음 |
 
 수집한 doorbell 11개는 모두 소리가 작게 녹음돼 있어(-23 ~ -34 dBFS) 보충 녹음이 필요합니다. 다음 단계는 fire·unknown 녹음 수집입니다.
 
-## 11. 팀원에게 확인받을 것
+## 12. 팀원에게 확인받을 것
 
 - [ ] UART `RESULT,...` 텍스트 형식을 FPGA에서 받을 수 있는가 (아니면 바이너리 패킷으로 변경)
 - [ ] **화재 규칙의 `CANDIDATE`/`CONFIRMED`를 UART에 어떻게 실을 것인가** (현재 `RESULT` 형식에는 단계 필드가 없음)
@@ -303,8 +336,9 @@ print(extract(load_wav("sample.wav")).shape)
 - [ ] 앱 → 장치 설정(`CONFIG`) 명령 규격을 누가 언제 정하는가
 - [ ] DOORBELL의 정의: 초인종(딩동)만인가, 도어락 알림음도 포함하는가
 - [ ] 실제 화재경보기 녹음을 구할 수 있는가 (학교 설비, 공개 데이터셋)
+- [ ] 비영리(CC BY-NC) 공개 데이터(ESC-50)를 어디까지 쓸 것인가 (개발·중간보고만? 제품 학습에도?)
 
-## 12. 알려진 한계
+## 13. 알려진 한계
 
 - 실제 데이터로 학습·평가한 적이 없어 모델 성능 수치가 없습니다.
 - 화재 규칙 검출기는 합성 소리로만 검증했고, 모델(`infer.py`)과 연결돼 있지 않습니다.

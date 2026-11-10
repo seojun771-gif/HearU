@@ -17,6 +17,8 @@
 
 ## 1단계 체크리스트
 
+> 공개 데이터셋(ESC-50)에서 knock·baby_cry·unknown 일부를 받으려면 `python fetch_public_data.py` ([CODE_GUIDE](CODE_GUIDE.md) 9장 참고). **fire·doorbell·사람 말소리는 없어서 직접 구해야 한다.** 비영리(CC BY-NC) 라이선스라 개발·중간보고용으로만 쓴다.
+
 ### doorbell (30개)
 - [x] 11개 녹음 (2026-11-05, 소리가 작음 → 아래 녹음 방법대로 보충)
 - [ ] 19개 추가: 거리(1m·3m), 문 닫힘, TV 켜짐 등 조건을 바꿔 가며

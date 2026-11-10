@@ -31,7 +31,7 @@
 - 리듬이 3번 이어지면 `CONFIRMED`(확정), 2번이면 `CANDIDATE`(의심)입니다.
 - AI 모델이 화재를 놓쳐도 잡을 수 있게 하는 안전망입니다.
 
-## 파일 7개
+## 파일 8개
 
 | 파일 | 역할 |
 |---|---|
@@ -42,10 +42,12 @@
 | `ai/fire_rule.py` | 화재경보음 규칙 검출기 (AI 모델과 독립) |
 | `ai/test_fire_rule.py` | 화재 규칙 검출기 자동 테스트 (합성 소리) |
 | `ai/check_data.py` | 수집한 녹음의 개수·품질 점검 |
+| `ai/fetch_public_data.py` | 공개 데이터셋(ESC-50)에서 문 두드림·아기 울음·기타 소리를 받아 변환 (화재·초인종·대화는 없음) |
 
 ## 사용법
 
 ```powershell
+python fetch_public_data.py           # 공개 데이터 받기 (--dry-run으로 목록만 확인)
 python check_data.py                  # 녹음 개수·품질 점검
 python train.py                       # 학습 (ai/data/ 폴더에 소리별 녹음 필요)
 python infer.py sample.wav            # 파일 하나 분류

@@ -44,7 +44,7 @@ Python AI 서비스  · 버퍼 수신 · 전처리/특징 추출 · 분류 · �
 
 | 영역 | 담당 기능 | 상태 |
 |---|---|---|
-| FPGA | I2S 입력, 소리 구간 검출, UART, LED·진동·OLED | 별도 개발 |
+| FPGA (보드: **EPS23**) | I2S 입력, 소리 구간 검출, UART, LED·진동·OLED | 별도 개발 |
 | AI (`ai/`) | 전처리, 특징 추출, 분류, 신뢰도·성능 평가 | **MVP 구현** |
 | 백엔드 (`backend/`) | 실시간 결과 중계, 기록 저장, 설정 API | 예정 |
 | 앱 (`app/`) | 알림 표시, 기록 조회, 감지 설정, 연결 상태 | 예정 |
@@ -79,6 +79,7 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 | `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |
 | `ai/test_fire_rule.py` | 규칙 검출기 테스트 (합성 소리) |
 | `ai/check_data.py` | 수집한 녹음의 개수(단계별 목표 대비)·품질(형식·크기·잘림·중복) 점검 |
+| `ai/fetch_public_data.py` | 공개 데이터셋(ESC-50)에서 knock·baby_cry·unknown 녹음 다운로드·변환 (비영리 라이선스, fire·doorbell·대화는 없음) |
 | `shared/labels.json` | 클래스·임계값 정의 |
 
 ### 신뢰도 처리
@@ -275,7 +276,7 @@ RESULT,class_id,label,confidence(0~100),priority\n
 - 개인 맞춤 소리 등록(녹음 UI, 업로드 API, 커스텀 라벨, 학습 방식)
 - 백그라운드 알림: WebSocket은 화면 꺼짐 시 끊기므로 Web Push(HTTPS) 필요. iOS는 홈 화면에 설치한 PWA만 가능
 - 앱 → 장치 `CONFIG` 명령 규격(LED 색·진동 패턴·야간 모드)
-- FPGA가 PCM 원본 / 특징값 중 무엇을 보낼지
+- FPGA가 PCM 원본 / 특징값 중 무엇을 보낼지 (보드는 EPS23로 확정. UART 속도·핀·전송량은 보드 사양 기준으로 확인)
 - 위치 정보·다중 장치 지원
 - 오분류 피드백의 재학습 반영 방식
 

@@ -11,6 +11,7 @@
   - AI·앱 개발 가이드: https://app.notion.com/p/HearU-AI-4dda23b8e3e2456cba07e03582ace8f2
 
 ## 기술 구성 (개발 가이드 기준)
+- FPGA 보드: EPS23 (확정)
 - 데이터 흐름: INMP441 마이크 → FPGA(I2S, 구간 검출) → UART → 노트북 Python AI → UART → FPGA 알림 / FastAPI → PWA
 - AI: 16kHz mono 16-bit, 1~2초 구간, MFCC + MLP 기준 모델 → Mel-spectrogram + 소형 CNN 비교
 - 신뢰도: ≥0.80 확정 / 0.60~0.80 약한 알림 / <0.60 UNKNOWN
