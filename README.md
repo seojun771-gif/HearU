@@ -2,7 +2,7 @@
 
 생활소리(화재경보기·아기 울음·초인종·문 두드림·사람 호출)를 AI로 분류하고, FPGA 장치(LED·진동·OLED)와 스마트폰 앱으로 알려주는 청각 보조 시스템.
 
-> **현재 상태**: AI 분류 MVP(MFCC + MLP)와 화재경보 규칙 검출기 구현. 실제 녹음은 doorbell 11개만 수집됨(성능 측정 전). 백엔드·앱·FPGA 연동은 미구현.
+> **현재 상태**: AI 분류 MVP(MFCC + MLP)와 화재경보 규칙 검출기 구현. 데이터는 직접 녹음 doorbell 11개 + 공개 데이터(ESC-50) knock 20·baby_cry 20·unknown 80이고 fire는 아직 없음. 첫 학습 정확도 0.59(테스트 27개, 참고용). 백엔드·앱·FPGA(보드 EPS23) 연동은 미구현.
 > **문서**: 코드 1분 요약 [docs/OVERVIEW.md](docs/OVERVIEW.md) · 파일별 상세 설명 [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) · 녹음 수집 [docs/DATA_COLLECTION.md](docs/DATA_COLLECTION.md)
 > 개발 원칙: 최고 정확도보다 **위험 소리를 놓치지 않는 Recall**, 불필요한 알림을 줄이는 Precision, **1초 이내 반응**, **폰이 끊겨도 유지되는 장치 알림**을 우선한다.
 
@@ -254,7 +254,7 @@ RESULT,class_id,label,confidence(0~100),priority\n
 - [x] 화재경보 규칙 검출기 (`fire_rule.py`, 합성 소리 테스트만 통과)
 - [ ] 화재경보 규칙 검출기를 실제 경보음 녹음으로 검증·임계값 조정, `infer.py --mic`에 연결
 - [x] 녹음 점검 스크립트 (`check_data.py`)
-- [ ] 실제 녹음 수집: 1단계 목표 doorbell 30 · fire 30 · unknown 60 (현재 doorbell 11, 소리가 작아 보충 필요)
+- [ ] 실제 녹음 수집: 1단계 목표 doorbell 30 · fire 30 · unknown 60 (현재 doorbell 11, 소리가 작아 보충 필요. fire 0개. knock·baby_cry·unknown은 ESC-50으로 일부 확보)
 - [ ] 데이터 수집·분리 스크립트 (현재 train.py가 8:2 단순 분할, 가이드는 70/15/15)
 - [ ] 클래스 가중치 MLP, Mel-spectrogram + CNN 비교
 - [ ] `evaluate.py`: 환경별 성능, 추론시간, 임계값별 PR, 실패 사례
