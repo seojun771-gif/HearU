@@ -56,12 +56,12 @@ python fire_rule.py alarm.wav         # 화재 규칙 검사 (모델 불필요)
 python -m unittest test_fire_rule -v  # 화재 규칙 테스트
 ```
 
-## 현재 상태 (2026-11-10 기준)
+## 현재 상태 (2026-11-17 기준)
 
 - **되는 것**: 학습, 파일/마이크 분류, 확신도 판정, FPGA용 메시지 문자열 생성, 화재 규칙 검출(합성 소리 테스트 15개 통과), 녹음 점검
-- **데이터**: doorbell 11(직접 녹음) + 공개 데이터(ESC-50) knock 20, baby_cry 20, unknown 80. **fire·call은 0개**
-- **학습 결과**: 정확도 0.59 (테스트 27개). 테스트가 너무 적고 데이터가 부족해 참고용일 뿐이며, **fire 데이터가 없어 지금 모델은 화재를 못 맞힙니다.**
+- **데이터**: 직접 녹음 doorbell 21·knock 10 + 공개 데이터(ESC-50) knock 23, baby_cry 20, unknown 80. **fire·call은 0개**
+- **학습 결과**: 정확도 0.74 (테스트 31개, 이전 0.59). knock·doorbell 100%는 녹음 환경 차이 때문일 수 있어 믿기 어렵고, **fire 데이터가 없어 지금 모델은 화재를 못 맞힙니다.**
 - **아직 없는 것**: fire 녹음, FPGA(보드: EPS23)와의 실제 UART 연결, 백엔드·앱. 화재 규칙도 합성 소리로만 검증했습니다.
-- 다음 단계: 교차검증으로 수치 안정화, fire 녹음 수집, doorbell 보충 녹음(소리가 작게 녹음됨)
+- 다음 단계: unknown을 같은 마이크로 녹음, fire 녹음 수집, 교차검증으로 수치 안정화(녹음 볼륨이 작아 키울 것)
 
 더 자세한 설명은 [CODE_GUIDE.md](CODE_GUIDE.md)(파일별 상세), [DATA_COLLECTION.md](DATA_COLLECTION.md)(녹음 방법), 전체 구조와 계획은 [README](../README.md)를 보세요.
