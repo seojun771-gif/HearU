@@ -57,7 +57,7 @@ def peak_frame_rms(y: np.ndarray, frame: int = SR // 50) -> float:
 
 
 def run(port: int, dev_sr: int, send_weak: bool, rms_gate: float, confirm_n: int = 2,
-        host: str = "0.0.0.0", max_seconds=None):
+        host: str = "0.0.0.0", max_seconds=None, verbose: bool = True):
     cooldown = _cfg["cooldown_sec"]
     t = time.perf_counter()
     classify(np.random.default_rng(0).normal(0, 0.1, SR).astype(np.float32))   # 모델 로드·librosa 초기화(첫 호출이 느림)
@@ -74,6 +74,7 @@ def run(port: int, dev_sr: int, send_weak: bool, rms_gate: float, confirm_n: int
     streak = (None, 0)
     sender, late = None, 0
     last = {}
+    stat_t, stat_n, stat_peak = time.time(), 0, 0.0      # 도착 확인용 통계
     t_start = time.time()
 
     try:
@@ -89,6 +90,15 @@ def run(port: int, dev_sr: int, send_weak: bool, rms_gate: float, confirm_n: int
             seq = (data[0] << 8) | data[1]
             pcm = np.frombuffer(data[2:len(data) - (len(data) - 2) % 2], dtype="<i2").astype(np.float32) / 32768.0
             got += 1
+            if verbose:
+                if addr != sender:
+                    print(f"* 장치 연결됨: {addr[0]}:{addr[1]} (첫 패킷 seq={seq}, 샘플 {len(pcm)}개 = {len(pcm) / dev_sr * 1000:.0f}ms)")
+                    stat_t, stat_n, stat_peak = time.time(), 0, 0.0
+                stat_n += 1
+                stat_peak = max(stat_peak, float(np.abs(pcm).max()) if len(pcm) else 0.0)
+                if time.time() - stat_t >= 5:
+                    print(f"  [수신 중] 최근 5초 패킷 {stat_n}개 (정상이면 약 {int(5 * dev_sr / max(len(pcm), 1))}개), 최대 음량 {stat_peak:.3f}, 누적 유실 {lost}")
+                    stat_t, stat_n, stat_peak = time.time(), 0, 0.0
 
             if addr != sender:                         # 새 장치(또는 재접속): 번호·버퍼 새로 시작
                 sender, expected, late, buf, since, streak = addr, None, 0, np.zeros(win, dtype=np.float32), 0, (None, 0)
@@ -152,9 +162,10 @@ def main():
     ap.add_argument("--weak", action="store_true", help="신뢰도 60~80%%(WEAK)도 회신")
     ap.add_argument("--gate", type=float, default=0.005, help="20ms 구간 최대 음량이 이보다 작으면 무음 처리 (기본 0.005 ≈ -46dBFS)")
     ap.add_argument("--confirm", type=int, default=2, help="같은 결과가 연속 몇 번 나와야 회신할지 (기본 2, 1이면 즉시)")
+    ap.add_argument("--quiet", action="store_true", help="도착 확인 메시지(연결·5초 통계)를 끈다")
     ap.add_argument("--seconds", type=float, help="이 시간(초) 후 종료 (시험용)")
     a = ap.parse_args()
-    run(a.port, a.sr, a.weak, a.gate, a.confirm, max_seconds=a.seconds)
+    run(a.port, a.sr, a.weak, a.gate, a.confirm, max_seconds=a.seconds, verbose=not a.quiet)
 
 
 if __name__ == "__main__":
