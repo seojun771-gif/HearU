@@ -79,6 +79,9 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 | `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |
 | `ai/test_fire_rule.py` | 규칙 검출기 테스트 (합성 소리) |
 | `ai/check_data.py` | 수집한 녹음의 개수(단계별 목표 대비)·품질(형식·크기·잘림·중복) 점검 |
+| `ai/net_input.py` | **Wi-Fi(UDP)로 장치가 보내는 PCM을 받아 분류하고 5바이트 결과를 장치에 회신** (장치 없이 시험 가능) |
+| `ai/fake_device.py` | 가짜 장치: wav를 UDP로 실시간 전송하고 회신을 출력 (`net_input.py` 시험·패킷 형식 참고용) |
+| `ai/serial_bridge.py` | 분류 결과를 5바이트 패킷으로 UART(FPGA)에 전송 (pyserial, `--dry-run`으로 보드 없이 점검) |
 | `ai/fetch_public_data.py` | 공개 데이터셋(ESC-50)에서 knock·baby_cry·unknown 녹음 다운로드·변환 (비영리 라이선스, fire·doorbell·대화는 없음) |
 | `shared/labels.json` | 클래스·임계값 정의 |
 
@@ -186,7 +189,30 @@ RESULT,class_id,label,confidence(0~100),priority\n
 예) RESULT,3,DOORBELL,94,3
 ```
 
-초기에는 사람이 읽기 쉬운 텍스트를 쓰고, 전송량이 문제가 되면 고정 길이 바이너리 패킷으로 바꾼다. 앱 → 장치 설정(`CONFIG`) 명령은 아직 미정.
+위 텍스트는 로그·디버깅용이다. **FPGA(EPS23)로 실제 보내는 것은 `ai/serial_bridge.py`의 5바이트 고정 패킷**(제안안, FPGA 팀원 확인 필요)이다.
+
+| 바이트 | 내용 |
+|---|---|
+| 0 | 시작 `0xAA` |
+| 1 | class_id (0~5) |
+| 2 | confidence (0~100) |
+| 3 | priority (1~6) |
+| 4 | 체크섬 (앞 4바이트 XOR) |
+
+예) DOORBELL 95% → `AA 03 5F 03 F5`. 신뢰도 80% 이상만 전송(`--weak`로 60% 이상). 앱 → 장치 설정(`CONFIG`) 명령은 아직 미정.
+
+### 장치 → PC 오디오 전송 (Wi-Fi/UDP, 제안안)
+
+현재 방식은 **장치가 PCM을 PC로 보내고, PC가 분류한 뒤 위 5바이트를 회신**한다. 분류 코드와 모델은 PC에만 있고 장치는 분류하지 않는다. (UART는 16kHz·16bit PCM에 최소 약 320kbps가 필요해 115200bps로는 부족하다. Wi-Fi/UDP나 460800bps 이상이 필요.)
+
+| 방향 | 내용 |
+|---|---|
+| 장치 → PC (UDP, 기본 포트 5005) | `[seq 2바이트 빅엔디언, 0~65535 순환]` + `[PCM int16 리틀엔디언 mono 16kHz, 패킷당 320샘플(20ms) 권장]` |
+| PC → 장치 | 위 5바이트 결과 패킷을 PCM을 보낸 주소·포트로 회신 |
+
+- PC 실행: `python net_input.py` (Windows 방화벽 허용 필요, 같은 Wi-Fi여야 함)
+- 장치 없이 시험: 다른 터미널에서 `python fake_device.py data/doorbell/<파일>.wav`
+- 지연: 소리 시작 후 약 1~2초 뒤 회신 (1.5초 창, 0.5초 간격 분류, 같은 결과 2회 연속 확인). 목표 1초 이내에는 못 미침 → 실제 장치에서 측정·튜닝 필요.
 
 ### REST / WebSocket API (백엔드 초안, 미구현)
 
@@ -258,7 +284,9 @@ RESULT,class_id,label,confidence(0~100),priority\n
 - [ ] 데이터 수집·분리 스크립트 (현재 train.py가 8:2 단순 분할, 가이드는 70/15/15)
 - [ ] 클래스 가중치 MLP, Mel-spectrogram + CNN 비교
 - [ ] `evaluate.py`: 환경별 성능, 추론시간, 임계값별 PR, 실패 사례
-- [ ] UART 입출력 연결 (`serial_bridge.py`)
+- [x] 결과 → UART 5바이트 패킷 전송 (`ai/serial_bridge.py`, `--dry-run`·`--test`까지 확인, **실제 보드 연결 테스트는 아직**)
+- [x] 장치 → PC PCM 수신(UDP) + 분류 + 회신 (`ai/net_input.py`, 가짜 장치로 실시간 시험 통과, **실제 장치 시험은 아직**)
+- [ ] 팀원 장치 쪽: Wi-Fi 접속, PCM UDP 전송, 5바이트 수신 후 LED 제어
 
 **앱·백엔드**
 - [ ] FastAPI 서버, WebSocket 실시간 이벤트, SQLite 저장

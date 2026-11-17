@@ -45,8 +45,11 @@ def to_uart(r: dict) -> str:
     return f"RESULT,{r['class_id']},{r['label']},{round(r['confidence'] * 100)},{r['priority']}\n"
 
 
-def run_mic(rms_gate=0.01):
-    """1.5초 창을 0.5초 간격으로 슬라이딩. 같은 클래스는 쿨다운 동안 재알림 안 함."""
+def run_mic(rms_gate=0.01, on_result=None):
+    """1.5초 창을 0.5초 간격으로 슬라이딩. 같은 클래스는 쿨다운 동안 재알림 안 함.
+
+    on_result(r): 알림 대상 결과가 나올 때마다 호출되는 함수 (serial_bridge.py가 UART 전송에 사용).
+    """
     import sounddevice as sd
     from common import _cfg
     cooldown = _cfg["cooldown_sec"]
@@ -67,6 +70,8 @@ def run_mic(rms_gate=0.01):
                 continue
             last[r["label"]] = time.time()
             print(f"[{r['level']}] {r['ko']} {r['confidence']:.2f} ({ms:.0f}ms) -> {to_uart(r).strip()}")
+            if on_result:
+                on_result(r)
 
 
 if __name__ == "__main__":

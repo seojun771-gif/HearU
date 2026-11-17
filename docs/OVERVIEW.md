@@ -31,7 +31,7 @@
 - 리듬이 3번 이어지면 `CONFIRMED`(확정), 2번이면 `CANDIDATE`(의심)입니다.
 - AI 모델이 화재를 놓쳐도 잡을 수 있게 하는 안전망입니다.
 
-## 파일 8개
+## 파일 11개
 
 | 파일 | 역할 |
 |---|---|
@@ -42,6 +42,9 @@
 | `ai/fire_rule.py` | 화재경보음 규칙 검출기 (AI 모델과 독립) |
 | `ai/test_fire_rule.py` | 화재 규칙 검출기 자동 테스트 (합성 소리) |
 | `ai/check_data.py` | 수집한 녹음의 개수·품질 점검 |
+| `ai/net_input.py` | Wi-Fi(UDP)로 장치가 보낸 소리를 받아 PC에서 분류하고 결과를 장치에 회신 |
+| `ai/fake_device.py` | 가짜 장치: 장치 없이 `net_input.py`를 시험하는 도구 |
+| `ai/serial_bridge.py` | 분류 결과를 5바이트 패킷으로 UART(FPGA)에 보냄 (보드 연결 테스트는 아직) |
 | `ai/fetch_public_data.py` | 공개 데이터셋(ESC-50)에서 문 두드림·아기 울음·기타 소리를 받아 변환 (화재·초인종·대화는 없음) |
 
 ## 사용법
