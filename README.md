@@ -75,6 +75,9 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 |---|---|
 | `ai/common.py` | 설정, 오디오 로딩, 특징 추출 (학습·추론 공용) |
 | `ai/train.py` | 학습, 평가(클래스별 P/R/F1, 혼동행렬), `model.joblib` 저장 |
+| `ai/features.py` | 기준 모델 특징 추출: MFCC 120 + 주파수 변화 10 + 소리 크기 변화 6 (계산 방법은 [docs/FEATURES.md](docs/FEATURES.md)) |
+| `ai/train_features.py` | 위 특징으로 MLP 학습, 5겹 교차검증, 특징 조합 비교, `models/<이름>.joblib`·`results/<이름>.md` 저장 |
+| `ai/results/` | 학습 결과 표 (조합별·종류별 성능, 혼동행렬, 틀린 파일) |
 | `ai/infer.py` | 파일/마이크 추론, 신뢰도 판정, UART 메시지 생성 |
 | `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |
 | `ai/test_fire_rule.py` | 규칙 검출기 테스트 (합성 소리) |
@@ -144,6 +147,8 @@ ai/data/
 
 ```powershell
 python train.py                # 학습 + 평가 + model.joblib 저장
+python train_features.py       # 기준 모델(MFCC+주파수 변화+소리 크기 변화) 학습 → results/baseline.md
+python train_features.py --data data_laptop --name laptop   # 다른 녹음 폴더로 두 번째 모델
 python infer.py sample.wav     # 파일 분류
 python infer.py --mic          # 마이크 실시간 (1.5초 창, 0.5초 간격, 쿨다운 적용)
 ```
@@ -313,7 +318,7 @@ RESULT,class_id,label,confidence(0~100),priority\n
 ```
 hearu/
 ├─ ai/            # 분류 모델, 화재 규칙 검출기, 데이터 점검. 이후 evaluate.py, models/ 추가
-├─ docs/          # OVERVIEW.md, CODE_GUIDE.md, DATA_COLLECTION.md
+├─ docs/          # OVERVIEW.md, CODE_GUIDE.md, DATA_COLLECTION.md, FEATURES.md(특징 계산·학습 결과 표)
 ├─ shared/        # labels.json, (예정) protocol.md
 ├─ backend/       # 예정: main.py, database.py, schemas.py, serial_bridge.py
 ├─ app/           # 예정: src/, public/

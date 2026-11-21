@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 ai/data/
 ai/model.joblib
+ai/models/
+ai/*.joblib
