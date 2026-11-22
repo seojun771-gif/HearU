@@ -1,0 +1,671 @@
+{
+  "name": "esp32_1122",
+  "date": "2026-11-22T19:06:48",
+  "data": [
+    "ai/data"
+  ],
+  "exclude": [
+    "esp32_20261117"
+  ],
+  "counts": {
+    "UNKNOWN": 80,
+    "FIRE": 30,
+    "BABY_CRY": 20,
+    "DOORBELL": 51,
+    "KNOCK": 33
+  },
+  "devices": {
+    "esc50": {
+      "UNKNOWN": 80,
+      "BABY_CRY": 20,
+      "KNOCK": 23
+    },
+    "esp32": {
+      "FIRE": 30,
+      "DOORBELL": 30
+    },
+    "기타": {
+      "DOORBELL": 21,
+      "KNOCK": 10
+    }
+  },
+  "total": 214,
+  "sessions": 130,
+  "feature_dims": 136,
+  "n_aug": 3,
+  "folds": 5,
+  "ablation": {
+    "MFCC만": {
+      "dims": 120,
+      "accuracy": 0.8317757009345794,
+      "macro_f1": 0.8244200833450794,
+      "recall": {
+        "UNKNOWN": 0.788,
+        "FIRE": 0.9,
+        "BABY_CRY": 0.7,
+        "DOORBELL": 0.922,
+        "KNOCK": 0.818
+      }
+    },
+    "MFCC+주파수변화": {
+      "dims": 130,
+      "accuracy": 0.8317757009345794,
+      "macro_f1": 0.8272255447195448,
+      "recall": {
+        "UNKNOWN": 0.775,
+        "FIRE": 0.9,
+        "BABY_CRY": 0.75,
+        "DOORBELL": 0.922,
+        "KNOCK": 0.818
+      }
+    },
+    "MFCC+소리크기변화": {
+      "dims": 126,
+      "accuracy": 0.8598130841121495,
+      "macro_f1": 0.8541454205313854,
+      "recall": {
+        "UNKNOWN": 0.838,
+        "FIRE": 0.833,
+        "BABY_CRY": 0.75,
+        "DOORBELL": 0.922,
+        "KNOCK": 0.909
+      }
+    },
+    "전체(3종)": {
+      "dims": 136,
+      "accuracy": 0.8551401869158879,
+      "macro_f1": 0.8436263605938212,
+      "recall": {
+        "UNKNOWN": 0.8,
+        "FIRE": 0.867,
+        "BABY_CRY": 0.7,
+        "DOORBELL": 0.98,
+        "KNOCK": 0.879
+      }
+    }
+  },
+  "eval_file": {
+    "accuracy": 0.8551401869158879,
+    "macro_f1": 0.8436263605938212,
+    "per_class": {
+      "UNKNOWN": {
+        "precision": 0.8205128205128205,
+        "recall": 0.8,
+        "f1": 0.810126582278481,
+        "n": 80
+      },
+      "FIRE": {
+        "precision": 0.9285714285714286,
+        "recall": 0.8666666666666667,
+        "f1": 0.896551724137931,
+        "n": 30
+      },
+      "BABY_CRY": {
+        "precision": 0.7,
+        "recall": 0.7,
+        "f1": 0.7,
+        "n": 20
+      },
+      "DOORBELL": {
+        "precision": 0.9615384615384616,
+        "recall": 0.9803921568627451,
+        "f1": 0.970873786407767,
+        "n": 51
+      },
+      "KNOCK": {
+        "precision": 0.8055555555555556,
+        "recall": 0.8787878787878788,
+        "f1": 0.8405797101449275,
+        "n": 33
+      }
+    },
+    "by_condition": {
+      "quiet_close": {
+        "FIRE": {
+          "recall": 0.8,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 1.0,
+          "n": 10
+        }
+      },
+      "quiet_far": {
+        "FIRE": {
+          "recall": 0.9,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 1.0,
+          "n": 10
+        }
+      },
+      "tv": {
+        "FIRE": {
+          "recall": 0.9,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 1.0,
+          "n": 10
+        }
+      }
+    },
+    "confusion": {
+      "labels": [
+        "UNKNOWN",
+        "FIRE",
+        "BABY_CRY",
+        "DOORBELL",
+        "KNOCK"
+      ],
+      "matrix": [
+        [
+          64,
+          2,
+          6,
+          1,
+          7
+        ],
+        [
+          3,
+          26,
+          0,
+          1,
+          0
+        ],
+        [
+          6,
+          0,
+          14,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          50,
+          0
+        ],
+        [
+          4,
+          0,
+          0,
+          0,
+          29
+        ]
+      ]
+    },
+    "misclassified": [
+      {
+        "file": "unknown/esc50_1-100210-A-36_vacuum_cleaner.wav",
+        "true": "UNKNOWN",
+        "pred": "DOORBELL"
+      },
+      {
+        "file": "unknown/esc50_1-21934-A-38_clock_tick.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_1-34094-A-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_1-51805-A-33_door_wood_creaks.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_2-135728-A-38_clock_tick.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_2-209475-A-25_footsteps.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_2-70936-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_2-82274-A-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_3-216280-A-39_glass_breaking.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_3-58772-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_4-108352-A-33_door_wood_creaks.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_4-121532-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_4-133047-C-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_4-188293-B-15_water_drops.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_4-191687-A-0_dog.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_4-204123-A-39_glass_breaking.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_close_05.wav",
+        "true": "FIRE",
+        "pred": "DOORBELL"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_close_09.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_far_10.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_tv_10.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_1-211527-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_2-50665-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_2-66637-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_3-151081-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_4-59579-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_5-198411-F-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "doorbell/doorbell_20261117_06.wav",
+        "true": "DOORBELL",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/esc50_1-81001-A-30_door_wood_knock.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/esc50_4-186518-A-30_door_wood_knock.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_03.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_08.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      }
+    ]
+  },
+  "eval_session": {
+    "accuracy": 0.8177570093457944,
+    "macro_f1": 0.8080379161647377,
+    "per_class": {
+      "UNKNOWN": {
+        "precision": 0.7590361445783133,
+        "recall": 0.7875,
+        "f1": 0.7730061349693251,
+        "n": 80
+      },
+      "FIRE": {
+        "precision": 0.8620689655172413,
+        "recall": 0.8333333333333334,
+        "f1": 0.847457627118644,
+        "n": 30
+      },
+      "BABY_CRY": {
+        "precision": 0.7,
+        "recall": 0.7,
+        "f1": 0.7,
+        "n": 20
+      },
+      "DOORBELL": {
+        "precision": 0.96,
+        "recall": 0.9411764705882353,
+        "f1": 0.9504950495049505,
+        "n": 51
+      },
+      "KNOCK": {
+        "precision": 0.78125,
+        "recall": 0.7575757575757576,
+        "f1": 0.7692307692307693,
+        "n": 33
+      }
+    },
+    "by_condition": {
+      "quiet_close": {
+        "FIRE": {
+          "recall": 0.8,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 1.0,
+          "n": 10
+        }
+      },
+      "quiet_far": {
+        "FIRE": {
+          "recall": 0.8,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 1.0,
+          "n": 10
+        }
+      },
+      "tv": {
+        "FIRE": {
+          "recall": 0.9,
+          "n": 10
+        },
+        "DOORBELL": {
+          "recall": 0.8,
+          "n": 10
+        }
+      }
+    },
+    "confusion": {
+      "labels": [
+        "UNKNOWN",
+        "FIRE",
+        "BABY_CRY",
+        "DOORBELL",
+        "KNOCK"
+      ],
+      "matrix": [
+        [
+          63,
+          4,
+          6,
+          0,
+          7
+        ],
+        [
+          3,
+          25,
+          0,
+          2,
+          0
+        ],
+        [
+          6,
+          0,
+          14,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          48,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          25
+        ]
+      ]
+    },
+    "misclassified": [
+      {
+        "file": "unknown/esc50_1-100210-A-36_vacuum_cleaner.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_1-31482-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_1-34094-A-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_1-51805-A-33_door_wood_creaks.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_2-135728-A-38_clock_tick.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_2-209475-A-25_footsteps.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_2-70936-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_2-82274-A-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_2-83667-A-34_can_opening.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_3-58772-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_4-108352-A-33_door_wood_creaks.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_4-121532-A-42_siren.wav",
+        "true": "UNKNOWN",
+        "pred": "FIRE"
+      },
+      {
+        "file": "unknown/esc50_4-133047-C-5_cat.wav",
+        "true": "UNKNOWN",
+        "pred": "BABY_CRY"
+      },
+      {
+        "file": "unknown/esc50_4-181865-A-38_clock_tick.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_4-188293-B-15_water_drops.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_4-189332-A-37_clock_alarm.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "unknown/esc50_4-204123-A-39_glass_breaking.wav",
+        "true": "UNKNOWN",
+        "pred": "KNOCK"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_close_05.wav",
+        "true": "FIRE",
+        "pred": "DOORBELL"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_close_09.wav",
+        "true": "FIRE",
+        "pred": "DOORBELL"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_far_09.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_quiet_far_10.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "fire/fire_esp32_20261122_174248_tv_10.wav",
+        "true": "FIRE",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_1-211527-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_2-66637-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_3-151080-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_3-151081-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_4-59579-A-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "baby_cry/esc50_5-198411-F-20_crying_baby.wav",
+        "true": "BABY_CRY",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "doorbell/doorbell_20261117_06.wav",
+        "true": "DOORBELL",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "doorbell/doorbell_esp32_20261122_175419_tv_02.wav",
+        "true": "DOORBELL",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "doorbell/doorbell_esp32_20261122_175419_tv_04.wav",
+        "true": "DOORBELL",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/esc50_1-81001-A-30_door_wood_knock.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/esc50_4-186518-A-30_door_wood_knock.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_01.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_02.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_03.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_04.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_05.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      },
+      {
+        "file": "knock/knock_20261117_08.wav",
+        "true": "KNOCK",
+        "pred": "UNKNOWN"
+      }
+    ]
+  },
+  "cross_test": null,
+  "model_path": "ai/models/esp32_1122.joblib"
+}

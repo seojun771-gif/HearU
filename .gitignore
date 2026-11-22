@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 ai/data/
+ai/data_laptop/
 ai/model.joblib
 ai/models/
 ai/*.joblib
