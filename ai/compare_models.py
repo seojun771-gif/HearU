@@ -1,6 +1,6 @@
 """여러 학습 결과(results/<이름>.json)를 비교표로 만든다 -> docs/MODEL_COMPARISON.md
 
-  python compare_models.py esp32_1122 laptop esp32
+  python compare_models.py esp32_1122 phone esp32
 결과 파일이 없는 모델은 '미학습'으로 표시한다.
 """
 import json
@@ -8,7 +8,7 @@ import sys
 
 from common import ROOT
 
-TITLES = {"esp32_1122": "모델 1: ESP32 마이크", "laptop": "모델 2: 노트북 마이크",
+TITLES = {"esp32_1122": "모델 1: ESP32 마이크", "phone": "모델 2: 폰 마이크", "laptop": "노트북 마이크",
           "esp32": "참고: ESP32 전체 데이터", "baseline": "참고: 이전 기준 모델"}
 LABEL_KO = {"UNKNOWN": "기타", "FIRE": "화재", "BABY_CRY": "아기 울음", "DOORBELL": "초인종", "KNOCK": "노크"}
 COND_KO = {"quiet_close": "조용함 30cm", "quiet_far": "조용함 2m", "tv": "TV 소리 1m"}
@@ -37,9 +37,12 @@ def main(names):
     sep = "|" + "---|" * (len(names) + 1)
     row = lambda t, f: f"| {t} | " + " | ".join("미학습" if rs[n] is None else f(rs[n]) for n in names) + " |"
 
-    L = ["# 모델 비교: ESP32 마이크 vs 노트북 마이크", "",
-         "같은 소리를 폰으로 틀고 같은 조건(30cm / 2m / TV 소리 1m)에서 녹음해, 마이크만 다르게 학습한 두 모델을 비교한다.",
-         "두 모델 모두 공통 데이터(ESC-50 공개 데이터 + 이전 직접 녹음)에 각 마이크의 화재·초인종 녹음 60개를 더해 학습했다.",
+    L = ["# 모델 비교: ESP32 마이크 vs 폰 마이크", "",
+         "같은 화재경보음·초인종 소리를 녹음한 마이크만 다르게 해서 학습한 두 모델을 비교한다.",
+         "두 모델 모두 공통 데이터(ESC-50 공개 데이터 + 이전 직접 녹음)에 각 마이크의 화재·초인종 녹음을 더해 학습했다.",
+         "- ESP32: 5초 WAV 60개, 조건별 10개씩 (조용함 30cm / 조용함 2m / TV 소리 1m)",
+         "- 폰: 아이폰 음성 메모(m4a, 0.8~9.6초) 58개, 거리·환경 조건 구분 없음 → 16kHz WAV로 변환 (`import_phone.py`)",
+         "- 녹음 묶음(교차검증 B): ESP32는 녹음 조건별, 폰은 녹음 순서대로 3묶음",
          "'참고' 열은 11/17 ESP32 녹음까지 모두 넣은 모델로, 공정한 비교 대상은 아니다.",
          "특징(136차원)·모델(MLP)·평가 방법은 같다. 계산 방법은 [FEATURES.md](FEATURES.md).", "",
          "## 1. 데이터", "", head, sep,
@@ -61,7 +64,7 @@ def main(names):
     L += ["", "## 3. 종류별 재현율 (B. 녹음 묶음 단위)", "", head, sep]
     for lab, ko in LABEL_KO.items():
         L.append(row(ko, lambda r, lab=lab: f2(get(r, "eval_session", "per_class", lab, "recall"))))
-    L += ["", "## 4. 녹음 조건별 재현율 (B. 녹음 묶음 단위, 직접 녹음한 화재·초인종)", "", head, sep]
+    L += ["", "## 4. 녹음 조건별 재현율 (B. 녹음 묶음 단위, ESP32만 조건 기록 있음)", "", head, sep]
     for c, cko in COND_KO.items():
         for lab in ("FIRE", "DOORBELL"):
             L.append(row(f"{cko} · {LABEL_KO[lab]}",
@@ -78,14 +81,16 @@ def main(names):
           "- 목표: 화재·아기 울음 재현율 ≥0.95, Macro F1 ≥0.85.", "",
           "## 다시 만들기", "", "```",
           "cd ai",
-          "python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_laptop",
-          "python train_features.py --data data data_laptop --exclude esp32 --name laptop --test-on data --test-match esp32_20261122",
+          "python import_phone.py ../../2model/firebell fire --date 20261122",
+          "python import_phone.py ../../2model/dobelll doorbell --date 20261122",
+          "python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_phone",
+          "python train_features.py --data data data_phone --exclude esp32 --name phone --test-on data --test-match esp32_20261122",
           "python train_features.py --name esp32",
-          "python compare_models.py esp32_1122 laptop esp32", "```", ""]
+          "python compare_models.py esp32_1122 phone esp32", "```", ""]
     out = ROOT.parent / "docs" / "MODEL_COMPARISON.md"
     out.write_text("\n".join(L), encoding="utf-8")
     print("저장:", out.relative_to(ROOT.parent).as_posix())
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ["esp32_1122", "laptop", "esp32"])
+    main(sys.argv[1:] or ["esp32_1122", "phone", "esp32"])

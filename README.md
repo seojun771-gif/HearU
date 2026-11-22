@@ -79,6 +79,7 @@ WAV/PCM → 길이 맞춤 → 피크 정규화 → MFCC(40) → mean·std + delt
 | `ai/train_features.py` | 위 특징으로 MLP 학습, 5겹 교차검증, 특징 조합 비교, `models/<이름>.joblib`·`results/<이름>.md` 저장 |
 | `ai/results/` | 학습 결과 표 (조합별·종류별·녹음 조건별 성능, 혼동행렬, 틀린 파일) |
 | `ai/record_laptop.py` | 노트북 마이크로 비교 녹음 (ESP32 비교 녹음과 같은 조건 30cm/2m/TV, 16kHz 5초) → `ai/data_laptop/` |
+| `ai/import_phone.py` | 폰 음성 메모(m4a 등)를 학습용 16kHz WAV로 변환 → `ai/data_phone/` (PyAV 필요) |
 | `ai/compare_models.py` | 학습 결과 여러 개를 비교표로 → [docs/MODEL_COMPARISON.md](docs/MODEL_COMPARISON.md) |
 | `ai/infer.py` | 파일/마이크 추론, 신뢰도 판정, UART 메시지 생성 |
 | `ai/fire_rule.py` | 화재경보 규칙 검출기 (3kHz대 대역 + T-3/T-4 반복 주기). 모델과 독립적인 안전망 |

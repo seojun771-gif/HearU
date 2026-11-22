@@ -103,18 +103,35 @@
 - 화재·초인종 원본 소리가 한 종류씩뿐이라, B도 '처음 듣는 다른 화재경보기'에서의 성능보다 높게 나온다.
 - 상세: `ai/results/esp32.md`
 
-### 모델 2: 노트북 마이크 (녹음 대기)
+### 모델 2: 폰 마이크 (`phone`, 2026-11-22)
 
-ESP32 비교 녹음과 같은 소리·볼륨·조건으로 노트북 마이크에 녹음해 학습하고 마이크별로 비교한다. 비교표: [MODEL_COMPARISON.md](MODEL_COMPARISON.md)
+같은 화재경보음·초인종 소리를 아이폰 음성 메모로 녹음해 학습하고, ESP32 모델과 마이크별로 비교했다. 전체 비교표: [MODEL_COMPARISON.md](MODEL_COMPARISON.md)
+
+- 폰 녹음: `2model/` 화재 29개(중복 1개 제외) · 초인종 29개, m4a 48kHz, 0.8~9.6초, **거리·환경 조건 구분 없음**
+- 변환: `import_phone.py`로 16kHz mono WAV (`ai/data_phone/`). 녹음 순서대로 3묶음(p1~p3)으로 나눠 교차검증 B에 사용
+- 공정 비교: 모델 1도 11/22 ESP32 녹음 60개만 넣은 `esp32_1122`를 쓴다. 두 모델은 공통 데이터(ESC-50 + 이전 직접 녹음, 154개)가 같고 화재·초인종의 마이크만 다르다.
+
+| 평가 | 모델 1: ESP32 마이크 | 모델 2: 폰 마이크 |
+|---|---|---|
+| B. 녹음 묶음 단위 정확도 / Macro F1 | **0.82 / 0.81** | 0.73 / 0.71 |
+| B. 화재 재현율 | **0.83** | 0.59 |
+| B. 초인종 재현율 | **0.94** | 0.62 |
+| C. 다른 마이크 녹음으로 시험: 화재 | 0.21 (폰 녹음 29개) | 0.13 (ESP32 녹음 30개) |
+| C. 다른 마이크 녹음으로 시험: 초인종 | 0.03 (폰 녹음 29개) | 0.93 (ESP32 녹음 30개) |
+
+해석
+- **같은 마이크 안에서는 ESP32 모델이 더 좋다.** ESP32 녹음은 5초로 길이와 조건이 일정하다. 폰 녹음은 길이가 제각각(0.8초짜리도 있음)이고 조건 기록이 없어 더 고르지 않다.
+- **마이크가 바뀌면 둘 다 크게 떨어진다.** ESP32 모델은 폰 녹음 58개 중 38개를 '기타'로 봤다. 폰 모델은 ESP32 초인종은 맞혔지만(0.93), ESP32 화재 30개 중 20개를 '기타'로 봤다.
+- 결론: 마이크 특성 차이가 커서, **실제 장치(ESP32/INMP441)에서 쓸 모델은 같은 마이크로 녹음한 데이터로 학습해야 한다.** 폰 녹음은 그대로 섞기보다, 증강(마이크 특성 흉내) 실험용으로 따로 두는 것이 낫다.
+- 한계: 원본 소리가 한 종류씩이고 파일 수가 적어(30개 안팎), 몇 개만 바뀌어도 수치가 크게 움직인다.
 
 ```
 cd ai
-python record_laptop.py fire        # 조건 3개 x 10회 (Enter로 한 번씩)
-python record_laptop.py doorbell
-python train_features.py --data data data_laptop --exclude esp32 --name laptop --test-on data --test-match esp32_20261122
-python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_laptop
+python import_phone.py ../../2model/firebell fire --date 20261122
+python import_phone.py ../../2model/dobelll doorbell --date 20261122
+python train_features.py --data data data_phone --exclude esp32 --name phone --test-on data --test-match esp32_20261122
+python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_phone
 python compare_models.py
 ```
 
-- 공정 비교를 위해 모델 1 쪽도 11/22 ESP32 녹음만 넣은 `esp32_1122`를 쓴다. 두 모델은 공통 데이터(ESC-50 + 이전 직접 녹음)가 같고, 화재·초인종 60개의 마이크만 다르다.
-- `--test-on`: 한 마이크로 학습한 모델을 다른 마이크의 녹음으로 시험한다(C).
+노트북 마이크로 비교하려면 `record_laptop.py`로 녹음한 뒤 같은 방식으로 `--data data data_laptop --name laptop`을 쓴다.

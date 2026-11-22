@@ -3,10 +3,10 @@
 실행 예:
   python train_features.py --name esp32
       ai/data 전체 -> models/esp32.joblib, results/esp32.md·json
-  python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_laptop
-      비교용 모델 1: 공통 데이터 + 11/22 ESP32 녹음만 (노트북 녹음과 같은 조건), 노트북 녹음으로 교차 시험
-  python train_features.py --data data data_laptop --exclude esp32 --name laptop --test-on data --test-match esp32_20261122
-      비교용 모델 2: 공통 데이터 + 노트북 녹음, 11/22 ESP32 녹음으로 교차 시험
+  python train_features.py --exclude esp32_20261117 --name esp32_1122 --test-on data_phone
+      비교용 모델 1: 공통 데이터 + 11/22 ESP32 녹음만, 폰 녹음으로 교차 시험
+  python train_features.py --data data data_phone --exclude esp32 --name phone --test-on data --test-match esp32_20261122
+      비교용 모델 2: 공통 데이터 + 폰 녹음(import_phone.py로 변환), 11/22 ESP32 녹음으로 교차 시험
 
 평가 (둘 다 파일 단위, 증강은 학습 폴드에만):
   A. 파일 단위 5겹 층화 교차검증 - 이전 결과와 비교용
@@ -55,7 +55,7 @@ def rel(p):
 
 
 def device_of(name):
-    for d in ("esp32", "laptop", "esc50"):
+    for d in ("esp32", "laptop", "phone", "esc50"):
         if d in name:
             return d
     return "기타"
@@ -73,6 +73,9 @@ def session_of(path):
     m = re.search(r"((?:esp32|laptop)_\d{8}_\d{6})", n)
     if m:
         return m[1] + "_" + (condition_of(n) or "")
+    m = re.search(r"(phone_\d{8}_p\d+)", n)                     # 폰 녹음: 녹음 순서 묶음 (import_phone.py)
+    if m:
+        return n.split("_")[0] + "_" + m[1]
     m = re.search(r"_(\d{8})_\d+$", n)
     if m:
         return n.split("_")[0] + "_" + m[1]
@@ -202,8 +205,8 @@ def main():
         if len(tp):
             tf = features_for(tp, 0)
             tpred = model.predict(np.array([vec(g[0], GROUPS) for g in tf]))
-            tids = sorted(set(tl.tolist()))
-            cross = summarize(tp, tl, tpred, tids, test_dirs)
+            cross = summarize(tp, tl, tpred, ids, test_dirs)           # 혼동 행렬은 모델의 모든 종류로
+            cross["per_class"] = {k: v for k, v in cross["per_class"].items() if v["n"] > 0}
             cross.update({"data": [rel(d) for d in test_dirs], "n": int(len(tl)),
                           "devices": sorted({device_of(Path(q).name) for q in tp})})
             print(f"[교차 시험] {cross['devices']} {len(tl)}개 acc={cross['accuracy']:.3f}")
