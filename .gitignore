@@ -2,4 +2,8 @@
 __pycache__/
 *.pyc
 ai/data/
+ai/data_laptop/
+ai/data_phone/
 ai/model.joblib
+ai/models/
+ai/*.joblib
